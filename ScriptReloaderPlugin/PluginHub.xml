@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<PluginData xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="GitHubPlugin">
+  <Id>blukzen/PBReloader</Id>
+  <GroupId>blukzen/PBReloader</GroupId>
+  <FriendlyName>PBReloader</FriendlyName>
+  <Author>Blukzen</Author>
+  <Commit>{{commit_hash}}</Commit>
+  <SourceDirectories>
+    <Directory>Shared</Directory>
+    <Directory>ScriptReloaderPlugin</Directory>
+  </SourceDirectories>
+  <Tooltip>Adds </Tooltip>
+  <Description>
+    Adds functionality to the programmable block that allows you to select and auto refresh/recompile local scripts on change. Does not work in Multiplayer.
+  </Description>
+</PluginData>

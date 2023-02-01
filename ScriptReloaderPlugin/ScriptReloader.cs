@@ -1,28 +1,39 @@
 ﻿using System;
 using System.IO;
-using ClientPlugin.GUI;
+using System.Reflection;
+using Blukzen.ScriptReloadPlugin.GUI;
+using Blukzen.Shared.Config;
+using Blukzen.Shared.Logging;
+using Blukzen.Shared.Patches;
+using Blukzen.Shared.Plugin;
 using HarmonyLib;
 using Sandbox.Graphics.GUI;
-using Shared.Config;
-using Shared.Logging;
-using Shared.Patches;
-using Shared.Plugin;
+using Sandbox.ModAPI;
 using VRage.FileSystem;
 using VRage.Plugins;
+using VRage.Scripting;
 
-namespace ClientPlugin
+namespace Blukzen.ScriptReloadPlugin
 {
-    // ReSharper disable once UnusedType.Global
-    public class Plugin : IPlugin, ICommonPlugin
+    static class Constants
     {
-        public const string Name = "PluginTemplate";
-        public static Plugin Instance { get; private set; }
+        public static Guid StorageKeyScript = new Guid("d6685778-f72a-4fdc-be7a-4485687563ee");
+        public static readonly string LocalScriptsFolder = Path.Combine(MyFileSystem.UserDataPath, DefaultScriptsDirectory, "local");
+        public const string DefaultScriptsDirectory = "IngameScripts";
+        public const string DefaultScriptName = "Script.cs";
+    }
+    
+    public class ScriptReloader : IPlugin, ICommonPlugin
+    {
+        public const string Name = "ScriptReloader";
+        public static readonly Guid _id = new("d6685778-f72a-4fdc-be7a-4485687563ee");
+        public IPluginLogger Log => Logger;
+        public static readonly IPluginLogger Logger = new PluginLogger(Name);
+        public static ScriptReloader Instance { get; private set; }
+
 
         public long Tick { get; private set; }
-
-        public IPluginLogger Log => Logger;
-        private static readonly IPluginLogger Logger = new PluginLogger(Name);
-
+        
         public IPluginConfig Config => config?.Data;
         private PersistentConfig<PluginConfig> config;
         private static readonly string ConfigFileName = $"{Name}.cfg";
@@ -33,10 +44,9 @@ namespace ClientPlugin
         [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
         public void Init(object gameInstance)
         {
-            Instance = this;
-
             Log.Info("Loading");
-
+            Instance = this;
+            
             var configPath = Path.Combine(MyFileSystem.UserDataPath, ConfigFileName);
             config = PersistentConfig<PluginConfig>.Load(Log, configPath);
 
@@ -107,12 +117,10 @@ namespace ClientPlugin
 
         private void Initialize()
         {
-            // TODO: Put your one time initialization code here. It is executed on first update, not on loading the plugin.
         }
 
         private void CustomUpdate()
         {
-            // TODO: Put your update code here. It is called on every simulation frame!
         }
 
 

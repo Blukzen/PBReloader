@@ -1,6 +1,6 @@
 using System.ComponentModel;
 
-namespace Shared.Config
+namespace Blukzen.Shared.Config
 {
     public interface IPluginConfig: INotifyPropertyChanged
     {

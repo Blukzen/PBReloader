@@ -1,7 +1,7 @@
-using Shared.Config;
-using Shared.Logging;
+using Blukzen.Shared.Logging;
+using Blukzen.Shared.Config;
 
-namespace Shared.Plugin
+namespace Blukzen.Shared.Plugin
 {
     public static class Common
     {

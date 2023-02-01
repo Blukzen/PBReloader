@@ -1,9 +1,9 @@
 using System;
 using System.Reflection;
+using Blukzen.Shared.Logging;
 using HarmonyLib;
-using Shared.Logging;
 
-namespace Shared.Patches
+namespace Blukzen.Shared.Patches
 {
     // ReSharper disable once UnusedType.Global
     public static class PatchHelpers

@@ -1,10 +1,11 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using Blukzen.Shared.Config;
 
 #if !TORCH
 
-namespace Shared.Config
+namespace Blukzen.Shared.Config
 {
     public class PluginConfig: IPluginConfig
     {

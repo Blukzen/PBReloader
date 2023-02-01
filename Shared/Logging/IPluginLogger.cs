@@ -1,6 +1,6 @@
 using System;
 
-namespace Shared.Logging
+namespace Blukzen.Shared.Logging
 {
     public interface IPluginLogger
     {

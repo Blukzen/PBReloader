@@ -1,7 +1,7 @@
-using Shared.Config;
-using Shared.Logging;
+using Blukzen.Shared.Config;
+using Blukzen.Shared.Logging;
 
-namespace Shared.Plugin
+namespace Blukzen.Shared.Plugin
 {
     public interface ICommonPlugin
     {
