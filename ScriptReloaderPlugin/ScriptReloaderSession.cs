@@ -33,11 +33,6 @@ namespace Blukzen.ScriptReloadPlugin
             Instance = this;
         }
 
-        public override void BeforeStart()
-        {
-            base.BeforeStart();
-        }
-
         public override void SaveData()
         {
             Storage.Save();

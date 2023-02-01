@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using Blukzen.ScriptReloadPlugin.Extensions;
 using Sandbox.Game.Entities.Blocks;
 
@@ -41,6 +42,14 @@ namespace Blukzen.ScriptReloadPlugin.Utility
             watcher.Unsubscribe(pb);
 
             if (watcher._programmableBlocks.Count == 0)
+            {
+                watcher.Dispose();
+            }
+        }
+        
+        public static void DisposeWatchers()
+        {
+            foreach (var (key, watcher) in GetWatchers)
             {
                 watcher.Dispose();
             }

@@ -2,6 +2,7 @@
 using System.IO;
 using System.Reflection;
 using Blukzen.ScriptReloadPlugin.GUI;
+using Blukzen.ScriptReloadPlugin.Utility;
 using Blukzen.Shared.Config;
 using Blukzen.Shared.Logging;
 using Blukzen.Shared.Patches;
@@ -67,7 +68,7 @@ namespace Blukzen.ScriptReloadPlugin
         {
             try
             {
-                //TODO: Dispose watchers
+                ScriptWatcher.DisposeWatchers();
             }
             catch (Exception ex)
             {
