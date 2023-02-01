@@ -521,14 +521,16 @@
         </Reference>
     </ItemGroup>
     <ItemGroup>
-        <Compile Include="FileHelpers.cs" />
+        <Compile Include="Extensions\ProgrammableBlockExtensions.cs" />
         <Compile Include="GUI\MyPluginConfigDialog.cs" />
-        <Compile Include="ProgrammableBlockExtensions.cs" />
-        <Compile Include="ProgrammableBlockPatch.cs" />
+        <Compile Include="Utility\FileHelpers.cs" />
+        <Compile Include="Utility\ScriptWatcher.cs" />
+        <Compile Include="Patches\ProgrammableBlockPatch.cs" />
         <Compile Include="ScriptReloader.cs" />
         <Compile Include="Properties\AssemblyInfo.cs" />
-        <Compile Include="ScriptWatcher.cs" />
-        <Compile Include="TerminalControlScriptList.cs" />
+        <Compile Include="ScriptReloaderSession.cs" />
+        <Compile Include="ScriptReloaderStorage.cs" />
+        <Compile Include="TerminalControls\TerminalControlScriptList.cs" />
     </ItemGroup>
     <ItemGroup>
       <Content Include="deploy.bat" />

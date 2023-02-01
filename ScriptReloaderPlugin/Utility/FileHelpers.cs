@@ -1,11 +1,10 @@
 ﻿using System;
 using System.IO;
 using System.Threading.Tasks;
-using Sandbox.Game.Entities.Blocks;
 
-namespace Blukzen.ScriptReloadPlugin
+namespace Blukzen.ScriptReloadPlugin.Utility
 {
-    public class FileHelpers
+    public static class FileHelpers
     {
         public static async void ReadFileBackoffAsync(string path, int maxRetries = 3, int backoffIntervalMilliseconds = 1000, Action<string> callback = null)
         {

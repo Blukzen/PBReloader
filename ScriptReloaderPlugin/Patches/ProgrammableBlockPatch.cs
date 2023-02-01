@@ -1,33 +1,51 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Reflection;
+using Blukzen.ScriptReloadPlugin.Extensions;
+using Blukzen.ScriptReloadPlugin.TerminalControls;
+using Blukzen.ScriptReloadPlugin.Utility;
 using HarmonyLib;
+using Sandbox.Definitions;
+using Sandbox.Game.Entities;
 using Sandbox.Game.Entities.Blocks;
-using Sandbox.Game.EntityComponents;
+using Sandbox.Game.Entities.Cube;
 using Sandbox.Game.Gui;
-using Sandbox.Graphics.GUI;
-using VRage.FileSystem;
+using VRage.Game;
 using VRage.Utils;
 
-namespace Blukzen.ScriptReloadPlugin
+namespace Blukzen.ScriptReloadPlugin.Patches
 {
     [HarmonyPatch(typeof(MyProgrammableBlock))]
     public class ProgrammableBlockPatch
     {
-        private static readonly Dictionary<string, ScriptWatcher> Watchers = new();
-
-        [HarmonyPatch(MethodType.Constructor)]
-        public static void MyProgrammableBlock()
+        [HarmonyPostfix]
+        [HarmonyPatch(typeof(MyFunctionalBlock), "OnAddedToScene")]
+        public static void OnAddedToScenePostfix(object source, MyFunctionalBlock __instance)
         {
-            if (!Directory.Exists(Constants.LocalScriptsFolder))
+            if (__instance is MyProgrammableBlock pb)
             {
-                Directory.CreateDirectory(Constants.LocalScriptsFolder);
+            }
+        }
+
+        [HarmonyPostfix]
+        [HarmonyPatch(typeof(MyProgrammableBlock), "Init")]
+        public static void InitPostfix(MyObjectBuilder_CubeBlock objectBuilder, MyCubeGrid cubeGrid, MyProgrammableBlock __instance, ref string ___m_editorData, ref string ___m_programData)
+        {
+            var data = __instance.GetData();
+            if (data.AutoReloadScript && data.HasScript)
+            {
+                var recompile = __instance.GetType().GetMethod("Recompile", BindingFlags.NonPublic | BindingFlags.Instance);
+                var watcher = ScriptWatcher.GetOrAddWatcher(data.SavedScriptPath);
+                var script = watcher.LoadScript();    
+                
+                watcher.Subscribe(__instance, false);
+                ___m_editorData = ___m_programData = script;
+                recompile?.Invoke(__instance, new object[] { false });
             }
         }
         
+
         [HarmonyPrefix]
         [HarmonyPatch("CreateTerminalControls")]
         public static void CreateTerminalControlsPrefix(out CreateTerminalControlsState __state)
@@ -76,30 +94,21 @@ namespace Blukzen.ScriptReloadPlugin
 
         private static bool GetAutoReloadEnabled(MyProgrammableBlock block)
         {
-            return false;
+            return block.GetData().AutoReloadScript;
         }
 
         private static void SetAutoReloadEnabled(MyProgrammableBlock pb, bool value)
         {
-            if (value && pb.TryGetScriptPath(out var scriptPath))
+            var data = pb.GetData();
+            data.AutoReloadScript = value;
+            if (value && data.SavedScriptPath is {Length: > 0})
             {
-                if (Watchers == null)
-                {
-                    return;
-                }
-
-                if (Watchers.ContainsKey(scriptPath))
-                {
-                    ScriptWatcher watcher;
-                    Watchers.TryGetValue(scriptPath, out watcher);
-                    watcher?.Subscribe(pb);
-                }
-                else
-                {
-                    ScriptWatcher watcher = new ScriptWatcher(scriptPath, Constants.DefaultScriptName);
-                    watcher.Subscribe(pb);
-                    Watchers.Add(scriptPath, watcher);
-                }
+                var watcher = ScriptWatcher.GetOrAddWatcher(data.SavedScriptPath);
+                watcher.Subscribe(pb);
+            }
+            else if (data.HasScript)
+            {
+                ScriptWatcher.Unsubscribe(data.SavedScriptPath, pb);
             }
         }
 
