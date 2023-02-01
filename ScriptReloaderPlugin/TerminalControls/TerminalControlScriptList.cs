@@ -8,6 +8,7 @@ using Blukzen.ScriptReloadPlugin.Utility;
 using Sandbox.Game.Entities.Blocks;
 using Sandbox.Game.Gui;
 using Sandbox.Graphics.GUI;
+using VRage.Game;
 using VRage.Utils;
 
 namespace Blukzen.ScriptReloadPlugin.TerminalControls
@@ -45,12 +46,15 @@ namespace Blukzen.ScriptReloadPlugin.TerminalControls
             if (!Directory.Exists(Constants.LocalScriptsFolder))
                 return;
 
-            var scriptPaths = Directory.GetDirectories(Constants.LocalScriptsFolder);
+            var scriptPaths = Directory.GetDirectories(Constants.LocalScriptsFolder)
+                .Concat(Directory.GetDirectories(Constants.CloudScriptsFolder));
+            
             foreach (var path in scriptPaths)
             {
+                var isCloud = path.Contains("temp");
                 var scriptName = Path.GetFileName(path);
                 var item = new MyGuiControlListbox.Item(text: new StringBuilder(scriptName), toolTip: scriptName,
-                    userData: path, icon: MyGuiConstants.TEXTURE_ICON_BLUEPRINTS_LOCAL.Normal);
+                    userData: path, icon: isCloud ? MyGuiConstants.TEXTURE_ICON_MODS_CLOUD.Normal : MyGuiConstants.TEXTURE_ICON_BLUEPRINTS_LOCAL.Normal);
                 list.Add(item);
             }
         }

@@ -21,6 +21,7 @@ namespace Blukzen.ScriptReloadPlugin
     {
         public static Guid StorageKeyScript = new Guid("d6685778-f72a-4fdc-be7a-4485687563ee");
         public static readonly string LocalScriptsFolder = Path.Combine(MyFileSystem.UserDataPath, DefaultScriptsDirectory, "local");
+        public static readonly string CloudScriptsFolder = Path.Combine(MyFileSystem.UserDataPath, DefaultScriptsDirectory, "temp");
         public const string DefaultScriptsDirectory = "IngameScripts";
         public const string DefaultScriptName = "Script.cs";
     }
@@ -28,7 +29,6 @@ namespace Blukzen.ScriptReloadPlugin
     public class ScriptReloader : IPlugin, ICommonPlugin
     {
         public const string Name = "ScriptReloader";
-        public static readonly Guid _id = new("d6685778-f72a-4fdc-be7a-4485687563ee");
         public IPluginLogger Log => Logger;
         public static readonly IPluginLogger Logger = new PluginLogger(Name);
         public static ScriptReloader Instance { get; private set; }
@@ -36,13 +36,13 @@ namespace Blukzen.ScriptReloadPlugin
 
         public long Tick { get; private set; }
         
-        public IPluginConfig Config => config?.Data;
-        private PersistentConfig<PluginConfig> config;
+        public IPluginConfig Config => _config?.Data;
+        private PersistentConfig<PluginConfig> _config;
         private static readonly string ConfigFileName = $"{Name}.cfg";
         private SpaceEngineersGame game;
         
-        private static bool initialized;
-        private static bool failed;
+        private static bool _initialized;
+        private static bool _failed;
 
         [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
         public void Init(object gameInstance)
@@ -51,13 +51,13 @@ namespace Blukzen.ScriptReloadPlugin
             Instance = this;
 
             var configPath = Path.Combine(MyFileSystem.UserDataPath, ConfigFileName);
-            config = PersistentConfig<PluginConfig>.Load(Log, configPath);
+            _config = PersistentConfig<PluginConfig>.Load(Log, configPath);
 
             Common.SetPlugin(this);
 
             if (!PatchHelpers.HarmonyPatchAll(Log, new Harmony(Name)))
             {
-                failed = true;
+                _failed = true;
                 return;
             }
 
@@ -83,7 +83,7 @@ namespace Blukzen.ScriptReloadPlugin
             EnsureInitialized();
             try
             {
-                if (!failed)
+                if (!_failed)
                 {
                     CustomUpdate();
                     Tick++;
@@ -92,13 +92,13 @@ namespace Blukzen.ScriptReloadPlugin
             catch (Exception ex)
             {
                 Log.Critical(ex, "Update failed");
-                failed = true;
+                _failed = true;
             }
         }
 
         private void EnsureInitialized()
         {
-            if (initialized || failed)
+            if (_initialized || _failed)
                 return;
 
             Log.Info("Initializing");
@@ -109,12 +109,12 @@ namespace Blukzen.ScriptReloadPlugin
             catch (Exception ex)
             {
                 Log.Critical(ex, "Failed to initialize plugin");
-                failed = true;
+                _failed = true;
                 return;
             }
 
             Log.Debug("Successfully initialized");
-            initialized = true;
+            _initialized = true;
         }
 
         private void Initialize()
