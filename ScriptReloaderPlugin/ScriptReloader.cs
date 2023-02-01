@@ -9,6 +9,7 @@ using Blukzen.Shared.Plugin;
 using HarmonyLib;
 using Sandbox.Graphics.GUI;
 using Sandbox.ModAPI;
+using SpaceEngineers.Game;
 using VRage.FileSystem;
 using VRage.Plugins;
 using VRage.Scripting;
@@ -37,7 +38,8 @@ namespace Blukzen.ScriptReloadPlugin
         public IPluginConfig Config => config?.Data;
         private PersistentConfig<PluginConfig> config;
         private static readonly string ConfigFileName = $"{Name}.cfg";
-
+        private SpaceEngineersGame game;
+        
         private static bool initialized;
         private static bool failed;
 
@@ -46,7 +48,7 @@ namespace Blukzen.ScriptReloadPlugin
         {
             Log.Info("Loading");
             Instance = this;
-            
+
             var configPath = Path.Combine(MyFileSystem.UserDataPath, ConfigFileName);
             config = PersistentConfig<PluginConfig>.Load(Log, configPath);
 
@@ -65,8 +67,7 @@ namespace Blukzen.ScriptReloadPlugin
         {
             try
             {
-                // TODO: Save state and close resources here, called when the game exists (not guaranteed!)
-                // IMPORTANT: Do NOT call harmony.UnpatchAll() here! It may break other plugins.
+                //TODO: Dispose watchers
             }
             catch (Exception ex)
             {
@@ -117,6 +118,10 @@ namespace Blukzen.ScriptReloadPlugin
 
         private void Initialize()
         {
+            if (!Directory.Exists(Constants.LocalScriptsFolder))
+            {
+                Directory.CreateDirectory(Constants.LocalScriptsFolder);
+            }
         }
 
         private void CustomUpdate()
