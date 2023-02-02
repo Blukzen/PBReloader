@@ -66,6 +66,8 @@ namespace Blukzen.ScriptReloadPlugin.Patches
             {
                 return;
             }
+
+            var enabled = new Func<MyProgrammableBlock, bool>(pb => pb.GetData().AutoReloadScript && pb.Enabled);
             
             MyTerminalControlSeparator<MyProgrammableBlock> separator =
                 new MyTerminalControlSeparator<MyProgrammableBlock>();
@@ -77,11 +79,13 @@ namespace Blukzen.ScriptReloadPlugin.Patches
                     MyStringId.GetOrCompute("Auto reloads script when file changed is detected"));
             toggle.Getter = GetAutoReloadEnabled;
             toggle.Setter = SetAutoReloadEnabled;
+            toggle.Enabled = pb => pb.Enabled;
 
             TerminalControlScriptList scriptList = new TerminalControlScriptList(
                 "PBScriptList",
                 MyStringId.GetOrCompute("Local Scripts"),
                 MyStringId.GetOrCompute("Select a local script to load"));
+            scriptList.Enabled = enabled;
 
             MyTerminalControlButton<MyProgrammableBlock> openFolder = new MyTerminalControlButton<MyProgrammableBlock>(
                 "PBAutoReloadOpenFolder",
@@ -89,6 +93,8 @@ namespace Blukzen.ScriptReloadPlugin.Patches
                 MyStringId.GetOrCompute("Opens the folder containing the selected script"),
                 OpenScriptFolder
             );
+            openFolder.Enabled = enabled;
+
 
             MyTerminalControlFactory.AddControl(separator);
             MyTerminalControlFactory.AddControl(toggle);
