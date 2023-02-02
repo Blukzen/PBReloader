@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Reflection;
 using Blukzen.ScriptReloadPlugin.Extensions;
@@ -11,8 +12,11 @@ using Sandbox.Game.Entities;
 using Sandbox.Game.Entities.Blocks;
 using Sandbox.Game.Entities.Cube;
 using Sandbox.Game.Gui;
+using Sandbox.Game.Screens.Terminal.Controls;
+using Sandbox.Graphics.GUI;
 using VRage.Game;
 using VRage.Utils;
+using VRageMath;
 
 namespace Blukzen.ScriptReloadPlugin.Patches
 {
@@ -20,31 +24,23 @@ namespace Blukzen.ScriptReloadPlugin.Patches
     public class ProgrammableBlockPatch
     {
         [HarmonyPostfix]
-        [HarmonyPatch(typeof(MyFunctionalBlock), "OnAddedToScene")]
-        public static void OnAddedToScenePostfix(object source, MyFunctionalBlock __instance)
-        {
-            if (__instance is MyProgrammableBlock pb)
-            {
-            }
-        }
-
-        [HarmonyPostfix]
         [HarmonyPatch(typeof(MyProgrammableBlock), "Init")]
-        public static void InitPostfix(MyObjectBuilder_CubeBlock objectBuilder, MyCubeGrid cubeGrid, MyProgrammableBlock __instance, ref string ___m_editorData, ref string ___m_programData)
+        public static void InitPostfix(MyObjectBuilder_CubeBlock objectBuilder, MyCubeGrid cubeGrid,
+            MyProgrammableBlock __instance, ref string ___m_editorData, ref string ___m_programData)
         {
             var data = __instance.GetData();
             if (data.AutoReloadScript && data.HasScript)
             {
-                var recompile = __instance.GetType().GetMethod("Recompile", BindingFlags.NonPublic | BindingFlags.Instance);
+                var recompile = __instance.GetType()
+                    .GetMethod("Recompile", BindingFlags.NonPublic | BindingFlags.Instance);
                 var watcher = ScriptWatcher.GetOrAddWatcher(data.SavedScriptPath);
-                var script = watcher.LoadScript();    
-                
+                var script = watcher.LoadScript();
+
                 watcher.Subscribe(__instance, false);
                 ___m_editorData = ___m_programData = script;
                 recompile?.Invoke(__instance, new object[] { false });
             }
         }
-        
 
         [HarmonyPrefix]
         [HarmonyPatch("CreateTerminalControls")]
@@ -73,7 +69,7 @@ namespace Blukzen.ScriptReloadPlugin.Patches
             
             MyTerminalControlSeparator<MyProgrammableBlock> separator =
                 new MyTerminalControlSeparator<MyProgrammableBlock>();
-                
+            
             MyTerminalControlOnOffSwitch<MyProgrammableBlock> toggle =
                 new MyTerminalControlOnOffSwitch<MyProgrammableBlock>(
                     "PBAutoReloadToggle",
@@ -86,22 +82,46 @@ namespace Blukzen.ScriptReloadPlugin.Patches
                 "PBScriptList",
                 MyStringId.GetOrCompute("Local Scripts"),
                 MyStringId.GetOrCompute("Select a local script to load"));
-                
+
+            MyTerminalControlButton<MyProgrammableBlock> openFolder = new MyTerminalControlButton<MyProgrammableBlock>(
+                "PBAutoReloadOpenFolder",
+                MyStringId.GetOrCompute("Open Script Folder"),
+                MyStringId.GetOrCompute("Opens the folder containing the selected script"),
+                OpenScriptFolder
+            );
+
             MyTerminalControlFactory.AddControl(separator);
             MyTerminalControlFactory.AddControl(toggle);
             MyTerminalControlFactory.AddControl(scriptList);
+            MyTerminalControlFactory.AddControl(openFolder);
         }
 
-        private static bool GetAutoReloadEnabled(MyProgrammableBlock block)
+        private static void OpenScriptFolder(MyProgrammableBlock pb)
         {
-            return block.GetData().AutoReloadScript;
+            var data = pb.GetData();
+            if (data.HasScript)
+            {
+                try
+                {
+                    Process.Start($@"{data.SavedScriptPath}");
+                }
+                catch (Exception e)
+                {
+                    ScriptReloader.Logger.Error(e, $"Failed to open script folder {data.SavedScriptPath}");
+                }
+            }
+        }
+
+        private static bool GetAutoReloadEnabled(MyProgrammableBlock pb)
+        {
+            return pb.GetData().AutoReloadScript;
         }
 
         private static void SetAutoReloadEnabled(MyProgrammableBlock pb, bool value)
         {
             var data = pb.GetData();
             data.AutoReloadScript = value;
-            if (value && data.SavedScriptPath is {Length: > 0})
+            if (value && data.SavedScriptPath is { Length: > 0 })
             {
                 var watcher = ScriptWatcher.GetOrAddWatcher(data.SavedScriptPath);
                 watcher.Subscribe(pb);
