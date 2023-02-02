@@ -121,7 +121,7 @@ namespace Blukzen.ScriptReloadPlugin.Patches
         {
             var data = pb.GetData();
             data.AutoReloadScript = value;
-            if (value && data.SavedScriptPath is { Length: > 0 })
+            if (value && data.HasScript)
             {
                 var watcher = ScriptWatcher.GetOrAddWatcher(data.SavedScriptPath);
                 watcher.Subscribe(pb);
